@@ -2,7 +2,6 @@
 
 --- We check that a manipulator exists and wrap it.
 local modules = peripheral.find("neuralInterface")
-if not modules then	error("Cannot find neural iterface", 0) end
 
 
 --- We define a function which fires a laser towards an entity. This is a very naive implementation as it does not

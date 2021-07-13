@@ -4,6 +4,7 @@ local speedForce = 0.5
 
 
 local modules = peripheral.find("neuralInterface")
+
 local name = ""
 
 if modules.getName then

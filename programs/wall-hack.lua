@@ -3,9 +3,7 @@ local textSize = 8
 local dotSize = 20
 
 local modules = peripheral.find("neuralInterface")
-if not modules then error("Must have a neural interface", 0) end
-if not modules.hasModule("plethora:sensor") then error("The entity sensor is missing", 0) end
-if not modules.hasModule("plethora:glasses") then error("The overlay glasses are missing", 0) end
+
 
 local entities = {}
 local canvas = modules.canvas3d().create()
@@ -99,6 +97,10 @@ end
 return {
 	name = "Wall Hack",
 	start = function () end,
+    dependencies = {
+		"plethora:sensor",
+		"plethora:glasses",
+	},
 	run = run,
 	delay = senseInterval,
 	finish = finish
