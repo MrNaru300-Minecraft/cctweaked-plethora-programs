@@ -1,6 +1,5 @@
 local textSize = 1
 local textHeight = 8 * textSize
-local programsPath = "programs/"
 local keyManager = require("libs.key-manager")
 
 local base_path = shell.resolve("")
@@ -40,10 +39,10 @@ canvas.clear()
 local function loadPrograms()
     canvas.clear()
 
-    for n, program in pairs(fs.list(base_path.."/"..programsPath)) do
+    for n, program in pairs(fs.list(base_path.."/programs")) do
         term.write("Loading "..program.."...")
 
-        local ok, data = pcall(loadfile(base_path.."/"..program))
+        local ok, data = pcall(loadfile(base_path.."/programs/"..program))
         if ok then print("Success") else error("Failed: "..data) end
 
         for _, dependency in pairs(data.dependencies) do
