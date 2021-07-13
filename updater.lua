@@ -4,7 +4,7 @@ local DEFAULT_PATH = "/cctweaked-plethora-programs/"
 
 --Get the repository content from url
 local function get_content(url)
-    local res = http.get(url)
+    local res, err_msg = http.get(url)
     local data = res.readAll()
     res.close()
     return textutils.unserialiseJSON(data)
@@ -12,11 +12,12 @@ end
 
 --Download a file to a specific path
 local function download_file(path, url)
-    local data, err_msg = http.get(url)
-    assert(err_msg == nil, "Request faild: "..err_msg)
+    local res, err_msg = http.get(url)
+    assert(res, err_msg)
     local file = fs.open(path, "w")
-    file.write(data)
+    file.write(res.readAll())
     file.close()
+    res.close()
     return err_msg
 end
 
@@ -30,7 +31,7 @@ local function download_files(fp, content)
 end
 
 local function ask(question)
-    term.write(question)
+    print(question)
     return read()
 end
 
@@ -44,10 +45,9 @@ local function askBool(question)
 end
 
 local function main()
-    local path = ask("Installation path [default: "..DEFAULT_PATH.."]:\n") or DEFAULT_PATH
+    local path = ask("Installation path\n[default: "..DEFAULT_PATH.."]:") or DEFAULT_PATH
     local errors = {}
 
-    local index_content = get_content(BASE_URL)
     local programs_content = get_content(BASE_URL.."programs")
     local libs_content = get_content(BASE_URL.."libs")
 
@@ -62,3 +62,5 @@ local function main()
     end
     
 end
+
+main()

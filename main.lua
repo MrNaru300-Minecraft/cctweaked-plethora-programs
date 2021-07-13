@@ -1,17 +1,20 @@
 local textSize = 1
 local textHeight = 8 * textSize
 local programsPath = "./programs/"
+local keyManager = require("libs.key-manager")
 
 
 local configs = {}
 
-local context = {}
+local context = {
+    keyManager = keyManager
+}
 
 local binds = {
-    ["Ore Scanner"] = "f",
-    ["Wall Hack"]   = "g",
-    ["Kill Aura"]   = "k",
-    ["Speed"]       = "l"
+    ["Ore Scanner"] = "ctrl+f",
+    ["Wall Hack"]   = "ctrl+g",
+    ["Kill Aura"]   = "ctrl+k",
+    ["Speed"]       = "ctrl+h"
 }
 
 local programs = {}
@@ -29,7 +32,7 @@ local canvas = modules.canvas()
 canvas.clear()
 
 
-local function updatePrograms(path)
+local function loadPrograms(path)
     canvas.clear()
 
     local path = path or programsPath
@@ -57,7 +60,16 @@ local function updatePrograms(path)
             text.setText(program)
         elseif binds[data.name] then
             text.setText(data.name..": ["..binds[data.name].."]")
-            binded_programs[keys[binds[data.name]]] = meta
+            keyManager:listen(binds[data.name],
+                function (state) 
+                    if meta.active and state.pressed then
+                        meta.data.start()
+                    else
+                        meta.data.finish()
+                    end
+                    meta.active = state.pressed
+                end
+            )
         else
             meta.data.start()
             meta.active = true
@@ -97,15 +109,33 @@ local function unloadPrograms()
 end
 
 local function reload(path)
+    unloadPrograms()
     modules = peripheral.find("neuralInterface")
     canvas = modules.canvas()
     canvas.clear()
-    unloadPrograms()
-    updatePrograms(path)
+    loadPrograms(path)
+end
+
+local function executePrograms()
+    for _, program in pairs(programs) do
+        if program.active then
+            if os.clock() - program.last_time_used >= program.data.delay then
+                
+                local ok, msg = pcall(program.data.run, configs, context, event)
+                
+                if not ok then print("["..program.data.name.."] Error: "..(msg or "")) end
+                
+                program.last_time_used = os.clock()
+                if program.data.delay > 0 then
+                    os.startTimer(program.data.delay+0.05)
+                end
+            end
+        end
+    end
 end
 
 local function run()
-    updatePrograms(programsPath)
+    loadPrograms(programsPath)
     while true do
         
         local event = {os.pullEventRaw()}
@@ -118,37 +148,16 @@ local function run()
             print("Done")
             break
 
-        elseif event[1] == "peripheral_detach" or event[1] == peripheral and event[2] == "back" then
+        elseif event[1] == "peripheral_detach" or event[1] == "peripheral" and event[2] == "back" then
             reload()
 
-        elseif binded_programs[event[2]] and not event[3] then
-            local program = binded_programs[event[2]]
-            if event[1] == "key" then
-                if program.active then
-                    program.active = false
-                    program.data.finish()
-                else
-                    program.active = true
-                    program.data.start()
-                end
-                render()
-            end
+        elseif event[1] == "key" then
+            keyManager:setKeyState(event[1], event[2], event[3])
+            render()
         end
-        for _, v in pairs(programs) do
-            if v.active then
-                if os.clock() - v.last_time_used >= v.data.delay then
-                   
-                    local ok, msg = pcall(v.data.run, configs, context, event)
 
-                    if not ok then print("["..v.data.name.."] Error: "..(msg or "")) end
+        executePrograms()
 
-                    v.last_time_used = os.clock()
-                    if v.data.delay > 0 then
-                        os.startTimer(v.data.delay+0.05)
-                    end
-                end
-            end
-        end
         term.clearLine()
         term.write("Took "..(os.clock()-now).."s")
         term.setCursorPos(1, ({term.getCursorPos()})[2])
