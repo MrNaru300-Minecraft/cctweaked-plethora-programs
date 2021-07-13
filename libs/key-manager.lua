@@ -20,6 +20,7 @@ function keyManager.parse(str)
             return nil, "Unknown key: "..key
         end
     end
+    return parsed
 end
 
 function keyManager:_notifyListeners(key)

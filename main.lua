@@ -53,7 +53,7 @@ local function loadPrograms()
         end
 
         local text = canvas.addText({1,1+(n-1)*textHeight}, "", 0xffffffff, textSize)
-        local meta = { bind = nil, file = program, loaded = ok, active = false, 
+        local meta = {file = program, loaded = ok, active = false, 
         last_time_used = os.clock(), data = data, text = text }
 
 
