@@ -19,20 +19,19 @@ else
     end
 end
 
-
-function run(config, context, event)
+local function run(config, context)
     local meta = modules.getMetaByName(name)
-
-    if event[1] == "key" then
-        if event[2] == keys.w then
-            modules.launch(meta.yaw, 0, speedForce)
-        elseif event[2] == keys.s then
-            modules.launch(meta.yaw-180, 0, speedForce)
-        elseif event[2] == keys.d then
-            modules.launch(meta.yaw+90, 0, speedForce)
-        elseif event[2] == keys.a then
-            modules.launch(meta.yaw-90, 0, speedForce)
-        end
+    if context.keyManager:isPressed("ctrl+w") then
+        modules.launch(meta.yaw-180, 0, speedForce)
+    end
+    if context.keyManager:isPressed("ctrl+s") then
+        modules.launch(meta.yaw-180, 0, speedForce)
+    end
+    if context.keyManager:isPressed("ctrl+d") then
+        modules.launch(meta.yaw+90, 0, speedForce)
+    end
+    if context.keyManager:isPressed("ctrl+a") then
+        modules.launch(meta.yaw-90, 0, speedForce)
     end
 end
 
@@ -45,7 +44,7 @@ return {
     },
 	start = function () end,
 	run = run,
-	delay = 0,
+	delay = 0.5,
 	finish = function () end
 	
 }

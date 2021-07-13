@@ -6,6 +6,7 @@ local parse_modes = {
 }
 
 local listeners = {}
+local map_ids = {}
 
 
 
@@ -58,11 +59,19 @@ function keyManager:isPressed(str)
     end
 end
 
+function keyManager:removeListener(id)
+    if map_ids[id] == nil then return false end
+    listeners[map_ids[id][1]][map_ids[id][2]] = nil
+end
+
 function keyManager:listen(str, func)
     local parsed, err = self.parse(str)
     if err then return err end
     if not listeners[parsed.key] then listeners[parsed.key] = {} end
-    listeners[parsed.key][#listeners[parsed.key]+1] = {bind = str, func = func}
+    local object = {bind = str, func = func}
+    listeners[parsed.key][#listeners[parsed.key]+1] = object
+    map_ids[#map_ids+1] = {parsed.key, #listeners[parsed.key]}
+    return #map_ids
 end
 
 return keyManager
