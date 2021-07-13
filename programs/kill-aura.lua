@@ -53,7 +53,7 @@ return {
 		"plethora:sensor",
 	},
 	run = run,
-	delay = 0.1,
+	delay = 1,
 	finish = function () end
 	
 }

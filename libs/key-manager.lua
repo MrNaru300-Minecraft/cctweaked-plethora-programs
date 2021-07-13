@@ -26,20 +26,13 @@ end
 function keyManager:_notifyListeners(key)
     if not listeners[key] then return false end
     for _, listener in pairs(listeners[key]) do
-        local notify = true
-        for _, mode in pairs(listener.modes) do
-            if not self[mode].pressed then
-                notify = false
-                break
-            end
-        end
         listener.func(self[key])
     end
 end
 
 function keyManager:setKeyState(key, pressed, pressing)
     local old = self[key] or {["pressed"] = false, ["pressing"] = false}
-    self[key] = {["pressed"] = pressed, ["pressing"] = pressing and pressed}
+    self[key] = {["pressed"] = pressed, ["pressing"] = pressed and pressing}
 
     if self[key].pressed ~= old.pressed or self[key].pressing ~= old.pressing then
         keyManager:_notifyListeners(key)
@@ -54,7 +47,7 @@ function keyManager:isPressed(str)
             return false
         else
             for _, v in pairs(parsed.modes) do
-                if not self[v] and not self[v].pressed then
+                if not self[v] or not self[v].pressed then
                     return false 
                 end
             end
@@ -66,8 +59,10 @@ function keyManager:isPressed(str)
 end
 
 function keyManager:listen(str, func)
-    local parsed = self.parse(str)
-    listeners[parsed.key] = {modes = parsed.modes, func = func}
+    local parsed, err = self.parse(str)
+    if err then return err end
+    if not listeners[parsed.key] then listeners[parsed.key] = {} end
+    listeners[parsed.key][#listeners[parsed.key]+1] = {bind = str, func = func}
 end
 
 return keyManager

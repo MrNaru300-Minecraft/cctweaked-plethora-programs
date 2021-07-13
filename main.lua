@@ -39,10 +39,10 @@ canvas.clear()
 local function loadPrograms()
     canvas.clear()
 
-    for n, program in pairs(fs.list(base_path.."/programs")) do
-        term.write("Loading "..program.."...")
+    for n, program_name in pairs(fs.list(base_path.."/programs")) do
+        term.write("Loading "..program_name.."...")
 
-        local ok, data = pcall(loadfile(base_path.."/programs/"..program))
+        local ok, data = pcall(loadfile(base_path.."/programs/"..program_name))
         if ok then print("Success") else error("Failed: "..data) end
 
         for _, dependency in pairs(data.dependencies) do
@@ -53,25 +53,27 @@ local function loadPrograms()
         end
 
         local text = canvas.addText({1,1+(n-1)*textHeight}, "", 0xffffffff, textSize)
-        local meta = {file = program, loaded = ok, active = false, 
+        local meta = {file = program_name, loaded = ok, active = false, 
         last_time_used = os.clock(), data = data, text = text }
 
-
+        
         if not ok or data == nil then
             text.setColor(0xff0000ff)
-            text.setText(program)
+            text.setText(data.name)
         elseif binds[data.name] then
             text.setText(data.name..": ["..binds[data.name].."]")
-            keyManager:listen(binds[data.name],
-                function (state) 
-                    if meta.active and state.pressed then
+            local err = keyManager:listen(binds[data.name],
+                function (state)
+                    if not meta.active and state.pressed and not state.pressing then
                         meta.data.start()
-                    else
+                        meta.active = true
+                    elseif meta.active and state.pressed and not state.pressing then
                         meta.data.finish()
+                        meta.active = false
                     end
-                    meta.active = state.pressed
                 end
             )
+            assert(err == nil, err)
         else
             meta.data.start()
             meta.active = true
@@ -154,7 +156,10 @@ local function run()
             reload()
 
         elseif event[1] == "key" then
-            keyManager:setKeyState(event[1], event[2], event[3])
+            keyManager:setKeyState(event[2], true, event[3])
+            render()
+        elseif event[1] == "key_up" then
+            keyManager:setKeyState(event[2], false, false)
             render()
         end
 
