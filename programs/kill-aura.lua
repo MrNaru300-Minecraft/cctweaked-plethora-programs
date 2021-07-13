@@ -24,7 +24,7 @@ for i = 1, #mobNames do
 end
 
 --- We now sense the vicinity and prepare to fire at them.
-function run()
+local function run()
 	local mobs = modules.sense()
 
 	--- First we build up a list of all mobs that we care about.

@@ -3,6 +3,8 @@ local textHeight = 8 * textSize
 local programsPath = "programs/"
 local keyManager = require("libs.key-manager")
 
+local base_path = shell.resolve("")
+
 
 
 
@@ -38,13 +40,11 @@ canvas.clear()
 local function loadPrograms()
     canvas.clear()
 
-    local path = shell.resolve(programsPath)
-
-    for n, program in pairs(fs.list(path)) do
+    for n, program in pairs(fs.list(base_path.."/"..programsPath)) do
         term.write("Loading "..program.."...")
 
-        local ok, data = pcall(loadfile(path..program))
-        if ok then print("Success") else print("Failed: "..data) end
+        local ok, data = pcall(loadfile(base_path.."/"..program))
+        if ok then print("Success") else error("Failed: "..data, 2) end
 
         for _, dependency in pairs(program.data.dependencies) do
             if not modules.hasModule(dependency) then

@@ -43,7 +43,7 @@ return {
         "plethora:kinetic",
         "plethora:sensor",
     },
-	start = start,
+	start = function () end,
 	run = run,
 	delay = 0,
 	finish = function () end
