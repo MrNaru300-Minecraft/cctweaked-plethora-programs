@@ -44,9 +44,9 @@ local function loadPrograms()
         term.write("Loading "..program.."...")
 
         local ok, data = pcall(loadfile(base_path.."/"..program))
-        if ok then print("Success") else error("Failed: "..data, 2) end
+        if ok then print("Success") else error("Failed: "..data) end
 
-        for _, dependency in pairs(program.data.dependencies) do
+        for _, dependency in pairs(data.dependencies) do
             if not modules.hasModule(dependency) then
                 ok = false
                 print("Missing: "..dependency)
