@@ -66,7 +66,7 @@ end
 
 function keyManager:listen(str, func)
     local parsed, err = self.parse(str)
-    if err then return err end
+    if err then return nil, err end
     if not listeners[parsed.key] then listeners[parsed.key] = {} end
     local object = {bind = str, func = func}
     listeners[parsed.key][#listeners[parsed.key]+1] = object

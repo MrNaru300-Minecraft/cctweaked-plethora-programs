@@ -62,7 +62,7 @@ local function loadPrograms()
             text.setText(data.name)
         elseif binds[data.name] then
             text.setText(data.name..": ["..binds[data.name].."]")
-            local err = keyManager:listen(binds[data.name],
+            local _, err = keyManager:listen(binds[data.name],
                 function (state)
                     if not meta.active and state.pressed and not state.pressing then
                         meta.data.start()
