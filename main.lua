@@ -1,6 +1,6 @@
 local textSize = 1
 local textHeight = 8 * textSize
-local programsPath = "./programs/"
+local programsPath = "programs/"
 local keyManager = require("libs.key-manager")
 
 
@@ -32,12 +32,10 @@ local canvas = modules.canvas()
 canvas.clear()
 
 
-local function loadPrograms(path)
+local function loadPrograms()
     canvas.clear()
 
-    local path = path or programsPath
-
-    for n, program in pairs(fs.list(path)) do
+    for n, program in pairs(fs.list(programsPath)) do
         term.write("Loading "..program.."...")
 
         local ok, data = pcall(loadfile(path..program))
@@ -108,12 +106,12 @@ local function unloadPrograms()
     binded_programs ={}
 end
 
-local function reload(path)
+local function reload()
     unloadPrograms()
     modules = peripheral.find("neuralInterface")
     canvas = modules.canvas()
     canvas.clear()
-    loadPrograms(path)
+    loadPrograms()
 end
 
 local function executePrograms()
@@ -135,7 +133,7 @@ local function executePrograms()
 end
 
 local function run()
-    loadPrograms(programsPath)
+    loadPrograms()
     while true do
         
         local event = {os.pullEventRaw()}

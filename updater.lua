@@ -2,9 +2,10 @@ local BASE_URL = "https://api.github.com/repos/MrNaru300/cctweaked-plethora-prog
 local DEFAULT_PATH = "/cctweaked-plethora-programs/"
 
 
---Get the repository content from url
+--Get repository content from url
 local function get_content(url)
-    local res, err_msg = http.get(url)
+    local res, err_msg, code = http.get(url)
+    assert(res, {error_message = err_msg, code = code})
     local data = res.readAll()
     res.close()
     return textutils.unserialiseJSON(data)
@@ -12,20 +13,22 @@ end
 
 --Download a file to a specific path
 local function download_file(path, url)
-    local res, err_msg = http.get(url)
-    assert(res, err_msg)
+    local res, err_msg, code = http.get(url)
+    assert(res, {err_msg})
     local file = fs.open(path, "w")
     file.write(res.readAll())
+    print("Downloaded: "..path)
     file.close()
     res.close()
     return err_msg
 end
 
+
+--Download all files from a directory on the repository
 local function download_files(fp, content)
-    local err_msgs = {}
     for _, data in pairs(content) do
         if data.type == "file" then
-            err_msgs[data.name] = download_file(fp.."/"..data.name)
+            download_file(fp..data.name, data.download_url)
         end
     end
 end
@@ -35,29 +38,52 @@ local function ask(question)
     return read()
 end
 
-local function askBool(question)
-    local answer = string.lower(ask(question))
+local function askBool(question, def)
+    local text = question
+    if def then
+        text = text.." [Y/n]"
+    else
+        text = text.." [y/N]"
+    end
+
+
+    local answer = string.lower(ask(text))
     if answer == "y" or answer == "yes" or answer == "s" or answer == "sim" or answer == "yay" then
         return true
-    else
+    elseif answer == "n" or answer == "no" or answer == "nao" or answer == "não" then
         return false
+    else
+        return def
     end
 end
 
 local function main()
-    local path = ask("Installation path\n[default: "..DEFAULT_PATH.."]:") or DEFAULT_PATH
-    local errors = {}
+    local path = ask("Installation path\n[default: "..DEFAULT_PATH.."]:")
+    if path == "" then path = DEFAULT_PATH end
 
-    local programs_content = get_content(BASE_URL.."programs")
-    local libs_content = get_content(BASE_URL.."libs")
 
-    download_file(path.."main.lua", BASE_URL.."main.lua")
-    download_files(path.."programs/",programs_content)
-    download_files(path.."libs/", libs_content)
+    if fs.exists(path) then
+        if askBool("The path already exists, overwrite it?", false) then
+            fs.delete(path)
+        else
+            return
+        end
+    end
 
-    if askBool("Start on startup? [y/N]") then
+    local programs_contents = get_content(BASE_URL.."programs")
+    local libs_contents = get_content(BASE_URL.."libs")
+    local main_content = get_content(BASE_URL.."main.lua")
+
+    download_file(path.."main.lua", main_content.download_url)
+    download_files(path.."programs/", programs_contents)
+    download_files(path.."libs/", libs_contents)
+
+    if askBool("Start on startup?", true) then
         local startup_file = fs.open("startup.lua", "w")
-        startup_file.write("loadfile('"..path.."main.lua')()")
+        startup_file.write(
+            "shell.setDir('"..path.."')\
+            local ok = shell.run('"..path.."main.lua')"
+        )
         startup_file.close()
     end
     
