@@ -24,6 +24,12 @@ local canvas = modules.canvas3d().create()
 
 local blocks = {}
 
+local function playSound(sound)
+	if speaker then
+		speaker.playSound(sound)
+	end  
+end
+
 local function start()
 	playSound("minecraft:block.stone.break")
 	for x = -scannerRange, scannerRange, 1 do
@@ -37,12 +43,6 @@ local function start()
 	end
 end
 
-
-local function playSound(sound)
-	if speaker then
-		speaker.playSound(sound)
-	end  
-end
 
 
 --- The render function takes our block information generated in the previous function and updates the text elements.
