@@ -35,7 +35,9 @@ canvas.clear()
 local function loadPrograms()
     canvas.clear()
 
-    for n, program in pairs(fs.list(programsPath)) do
+    local path = shell.resolve(programsPath)
+
+    for n, program in pairs(fs.list(path)) do
         term.write("Loading "..program.."...")
 
         local ok, data = pcall(loadfile(path..program))
