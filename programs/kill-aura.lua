@@ -4,9 +4,6 @@
 local modules = peripheral.find("neuralInterface")
 if not modules then	error("Cannot find neural iterface", 0) end
 
---- We require an entity sensor to find mobs and a laser to shoot at them. We error if neither exists.
-if not modules.hasModule("plethora:laser") then error("Cannot find laser", 0) end
-if not modules.hasModule("plethora:sensor") then error("Cannot find entity sensor", 0) end
 
 --- We define a function which fires a laser towards an entity. This is a very naive implementation as it does not
 --- account for the entity moving between firing and impact. You could use the `motionX`, `motionY` and `motionZ` fields
@@ -52,6 +49,10 @@ end
 return {
 	name = "Kill Aura",
 	start = function () end,
+	dependencies = {
+		"plethora:laser",
+		"plethora:sensor",
+	},
 	run = run,
 	delay = 0.1,
 	finish = function () end

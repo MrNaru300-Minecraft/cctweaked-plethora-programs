@@ -4,10 +4,17 @@ local programsPath = "programs/"
 local keyManager = require("libs.key-manager")
 
 
-local configs = {}
 
+
+local modules = peripheral.find("neuralInterface")
+if not modules then error("Must have a neural interface", 0) end
+if not modules.hasModule("plethora:glasses") then error("The overlay glasses are missing", 0) end
+if not modules.hasModule("plethora:keyboard") then error("The keyboard is missing", 0) end
+
+
+local configs = {}
 local context = {
-    keyManager = keyManager
+    keyManager = keyManager,
 }
 
 local binds = {
@@ -22,10 +29,6 @@ local binded_programs = {}
 
 
 
-local modules = peripheral.find("neuralInterface")
-if not modules then error("Must have a neural interface", 0) end
-if not modules.hasModule("plethora:glasses") then error("The overlay glasses are missing", 0) end
-if not modules.hasModule("plethora:keyboard") then error("The keyboard is missing", 0) end
 
 
 local canvas = modules.canvas()
