@@ -58,6 +58,7 @@ local function main()
     if askBool("Start on startup? [y/N]") then
         local startup_file = fs.open("startup.lua", "w")
         startup_file.write("loadfile('"..path.."main.lua')()")
+        startup_file.close()
     end
     
 end
