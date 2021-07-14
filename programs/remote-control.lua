@@ -13,9 +13,10 @@ local function listMobs()
 end
 
 local function start(configs, context)
-    for _, modem in pairs(context.modems) do
-        if modem.isWireless() then
-            rednet.open(peripheral.getName(modem))
+    for _, m in pairs(context.modems) do
+        if m.isWireless() then
+            rednet.open(peripheral.getName(m))
+            modem = m
             break
         end
     end
