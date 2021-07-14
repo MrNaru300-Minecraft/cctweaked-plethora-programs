@@ -7,10 +7,13 @@ local parse_modes = {
 
 local listeners = {}
 local map_ids = {}
+local parse_cache = {}
 
 
 
 function keyManager.parse(str)
+    if parse_cache[str] then return parse_cache[str] end
+
     local parsed = {key = 0, modes = {}}
     for key in string.gmatch(str, "(%w+)[%+%s]?") do
         if parse_modes[key] then
@@ -21,14 +24,20 @@ function keyManager.parse(str)
             return nil, "Unknown key: "..key
         end
     end
+    parse_cache[str] = parsed
     return parsed
 end
 
 function keyManager:_notifyListeners(key)
     if not listeners[key] then return false end
     for _, listener in pairs(listeners[key]) do
-        listener.func(self[key])
+        local ok, err = pcall(listener.func, self[key])
+        if not ok then self.handleError(err) end
     end
+end
+
+function keyManager.handleError(err)
+    print('[KeyManager] Error:', err)
 end
 
 function keyManager:setKeyState(key, pressed, pressing)
@@ -59,19 +68,25 @@ function keyManager:isPressed(str)
     end
 end
 
-function keyManager:removeListener(id)
+function keyManager.removeListener(id)
     if map_ids[id] == nil then return false end
     listeners[map_ids[id][1]][map_ids[id][2]] = nil
 end
 
-function keyManager:listen(str, func)
+function keyManager.listen(str, func)
     local parsed, err = self.parse(str)
     if err then return nil, err end
     if not listeners[parsed.key] then listeners[parsed.key] = {} end
+
     local object = {bind = str, func = func}
     listeners[parsed.key][#listeners[parsed.key]+1] = object
     map_ids[#map_ids+1] = {parsed.key, #listeners[parsed.key]}
-    return #map_ids
+    return #map_ids, nil
+end
+
+function keyManager.clearListeners()
+    map_ids = {}
+    listeners = {}
 end
 
 return keyManager

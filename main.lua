@@ -12,17 +12,17 @@ if not modules then error("Must have a neural interface", 0) end
 if not modules.hasModule("plethora:glasses") then error("The overlay glasses are missing", 0) end
 if not modules.hasModule("plethora:keyboard") then error("The keyboard is missing", 0) end
 
-
-local configs = {}
 local context = {
     keyManager = keyManager,
+    modems = {peripheral.find("modem")}
 }
 
 local binds = {
-    ["Ore Scanner"] = "ctrl+f",
-    ["Wall Hack"]   = "ctrl+g",
-    ["Kill Aura"]   = "ctrl+k",
-    ["Speed"]       = "ctrl+h"
+    ["Remote Control"] = "ctrl+shift+r",
+    ["Ore Scanner"] = "ctrl+h",
+    ["Wall Hack"]   = "ctrl+j",
+    ["Kill Aura"]   = "ctrl+x",
+    ["Speed"]       = "ctrl+f"
 }
 
 local programs = {}
@@ -46,7 +46,7 @@ local function loadPrograms()
         if ok then print("Success") else error("Failed: "..data) end
 
         for _, dependency in pairs(data.dependencies) do
-            if not modules.hasModule(dependency) then
+            if not modules.hasModule(dependency) and not peripheral.find(dependency) then
                 ok = false
                 print("Missing: "..dependency)
             end
@@ -62,13 +62,13 @@ local function loadPrograms()
             text.setText(data.name)
         elseif binds[data.name] then
             text.setText(data.name..": ["..binds[data.name].."]")
-            local _, err = keyManager:listen(binds[data.name],
+            local _, err = keyManager.listen(binds[data.name],
                 function (state)
                     if not meta.active and state.pressed and not state.pressing then
-                        meta.data.start()
+                        meta.data.start(configs, context)
                         meta.active = true
                     elseif meta.active and state.pressed and not state.pressing then
-                        meta.data.finish()
+                        meta.data.finish(configs, context)
                         meta.active = false
                     end
                 end
@@ -82,6 +82,8 @@ local function loadPrograms()
         end
         programs[#programs+1] = meta
     end
+
+    settings.save()
 end
 
 
@@ -113,6 +115,7 @@ local function unloadPrograms()
 end
 
 local function reload()
+    keyManager.clearListeners()
     unloadPrograms()
     modules = peripheral.find("neuralInterface")
     canvas = modules.canvas()
