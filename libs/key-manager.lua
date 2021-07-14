@@ -74,7 +74,7 @@ function keyManager.removeListener(id)
 end
 
 function keyManager.listen(str, func)
-    local parsed, err = self.parse(str)
+    local parsed, err = keyManager.parse(str)
     if err then return nil, err end
     if not listeners[parsed.key] then listeners[parsed.key] = {} end
 
