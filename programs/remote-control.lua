@@ -14,8 +14,8 @@ end
 
 local function start(configs, context)
     for _, modem in pairs(context.modems) do
-        if modem.isWireless then
-            rednet.open(modem)
+        if modem.isWireless() then
+            rednet.open(peripheral.getName(modem))
             break
         end
     end
