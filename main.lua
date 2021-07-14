@@ -155,7 +155,7 @@ local function run()
             print("Done")
             break
 
-        elseif event[1] == "peripheral_detach" or event[1] == "peripheral" and event[2] == "back" then
+        elseif event[1] == "peripheral_detach" or event[1] == "peripheral" then
             reload()
 
         elseif event[1] == "key" then
