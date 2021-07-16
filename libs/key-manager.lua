@@ -31,8 +31,10 @@ end
 function keyManager:_notifyListeners(key)
     if not listeners[key] then return false end
     for _, listener in pairs(listeners[key]) do
-        local ok, err = pcall(listener.func, self[key])
-        if not ok then self.handleError(err) end
+        if keyManager:isPressed(listener.bind) then
+            local ok, err = pcall(listener.func, self[key], listener.bind)
+            if not ok then self.handleError(err) end
+        end
     end
 end
 
@@ -44,14 +46,12 @@ function keyManager:setKeyState(key, pressed, pressing)
     local old = self[key] or {["pressed"] = false, ["pressing"] = false}
     self[key] = {["pressed"] = pressed, ["pressing"] = pressed and pressing}
 
-    if self[key].pressed ~= old.pressed or self[key].pressing ~= old.pressing then
-        keyManager:_notifyListeners(key)
-    end
+    keyManager:_notifyListeners(key)
 end
 
 
 function keyManager:isPressed(str)
-    local parsed, err = self.parse(str)
+    local parsed, err = keyManager.parse(str)
     if parsed then
         if not self[parsed.key] or not self[parsed.key].pressed then
             return false
@@ -70,7 +70,8 @@ end
 
 function keyManager.removeListener(id)
     if map_ids[id] == nil then return false end
-    listeners[map_ids[id][1]][map_ids[id][2]] = nil
+    map_ids[id][id] = nil
+    map_ids[id] = nil
 end
 
 function keyManager.listen(str, func)
@@ -79,9 +80,10 @@ function keyManager.listen(str, func)
     if not listeners[parsed.key] then listeners[parsed.key] = {} end
 
     local object = {bind = str, func = func}
-    listeners[parsed.key][#listeners[parsed.key]+1] = object
-    map_ids[#map_ids+1] = {parsed.key, #listeners[parsed.key]}
-    return #map_ids, nil
+    local id = #map_ids+1
+    listeners[parsed.key][id] = object
+    map_ids[id] = listeners[parsed.key]
+    return id, nil
 end
 
 function keyManager.clearListeners()

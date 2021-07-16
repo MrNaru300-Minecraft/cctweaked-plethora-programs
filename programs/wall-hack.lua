@@ -15,8 +15,8 @@ local function render()
         local canvas_obj = entity.canvas
         local pos = {meta.x, meta.y, meta.z}
         canvas_obj.frame.setPosition(pos[1], pos[2], pos[3])
-        canvas_obj.display_name.setText(meta.name)
-        canvas_obj.display_name.setPosition(#meta.name/2,1)
+        canvas_obj.display_name.setText(meta.displayName)
+        canvas_obj.display_name.setPosition(#meta.displayName/2,1)
         if meta.health then
             local health_text = "HP:"..meta.health.."/"..(meta.maxHealth or "?")
             canvas_obj.health.setText(health_text)
@@ -47,27 +47,29 @@ local function detect()
             --Do nothing, it's just an item
         elseif entities[mob.id] == nil then
             local meta = modules.getMetaByID(mob.id)
-
-            local frame = canvas.addFrame({meta.x,meta.y,meta.z})
-            local display_name = frame.addText({1,1}, "")
-            local health  = frame.addText({1,textSize+1}, "")
-            local center = frame.addDot(
-                {dotSize,2*textSize+dotSize+1},
-                math.random(0, 0xffffff)*0x100+0x8f,
-                dotSize
-            )
-
-            frame.setDepthTested(false)
-
-            entities[mob.id] = {
-                meta = meta,
-                canvas = {
-                    frame = frame,
-                    display_name = display_name,
-                    health = health,
-                    center = center,
+            
+            if meta then
+                local frame = canvas.addFrame({meta.x,meta.y,meta.z})
+                local display_name = frame.addText({1,1}, "")
+                local health  = frame.addText({1,textSize+1}, "")
+                local center = frame.addDot(
+                    {dotSize,2*textSize+dotSize+1},
+                    math.random(0, 0xffffff)*0x100+0x8f,
+                    dotSize
+                )
+    
+                frame.setDepthTested(false)
+    
+                entities[mob.id] = {
+                    meta = meta,
+                    canvas = {
+                        frame = frame,
+                        display_name = display_name,
+                        health = health,
+                        center = center,
+                    }
                 }
-            }
+            end
         else
             entities[mob.id].meta.x = mob.x
             entities[mob.id].meta.y = mob.y

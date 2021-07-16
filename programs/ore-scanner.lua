@@ -37,7 +37,7 @@ local function start()
 		for y = -scannerRange, scannerRange, 1 do
 			blocks[x][y] = {}
 			for z = -scannerRange, scannerRange, 1 do
-				blocks[x][y][z] = nil
+				blocks[x][y][z] = {}
 			end
 		end
 	end
@@ -60,7 +60,7 @@ local function render(pos)
 				local block = blocks[x][y][z]
 				
 				--Create a hologram from the block name
-				if block then
+				if block.name then
 					local item = canvas.addItem(
 					{
 						x-pos[1]+math.floor(pos[1])+0.5,
@@ -94,7 +94,7 @@ local function scan()
 				local scanned = scanned_blocks[scannerWidth ^ 2 * (x + scannerRange) + scannerWidth * (y + scannerRange) + (z + scannerRange) + 1]
 				
 				-- Verifies if there's a new block detected
-				if blocks[x][y][z] ~= scanned then
+				if blocks[x][y][z].name ~= scanned.name or blocks[x][y][z].metadata ~= scanned.metadata then
 					updateRender = true
 					--- If there is an ore here, let's save it!
 					if string.find(string.lower(scanned.name), "ore") or string.find(string.lower(scanned.name), "chest")  then
@@ -104,7 +104,7 @@ local function scan()
 						blocks[x][y][z].name = "minecraft:lava_bucket"
 						
 					else
-						blocks[x][y][z] = nil
+						blocks[x][y][z] = {}
 					end
 				end
 			end

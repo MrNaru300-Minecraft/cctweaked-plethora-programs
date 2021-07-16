@@ -7,8 +7,21 @@ local modem = peripheral.find("modem")
 if not modem or not modem.isWireless then error("Must have a wireless modem", 0) end
 
 
+rednet.open(peripheral.getName(modem))
 rednet.host(PROTOCOL, "controlled-mob/"..os.getComputerID())
 
+
+local function parseResult(t)
+    local result = {}
+    for k, v in pairs(t) do
+        if type(v) == "table" then
+            result[k] = textutils.serialize(parseResult(v))
+        elseif type(v) == "nil" or type(v) == "number" or type(v) =="boolean" or type(v) == "string" then
+            result[k] = tostring(v)
+        end
+    end
+    return result
+end
 
 local function run()
     local sID, message, protocol = rednet.receive()
@@ -18,47 +31,32 @@ local function run()
         if type(message) == "string" then
             rednet.send(sID, {type = "ECHO", result = message}, PROTOCOL)
         
+        elseif type(message) ~= "table" then
+            print()
 
         elseif message.command == "update" then
             local ok, err, file = pcall(fs.open, message.file_path, "w")
-            file.write(message.data)
-            file.close()
+            rednet.send(sID, {type = "update", result = {ok = ok, err = err}}, PROTOCOL)
+            if ok then
+                file.write(message.data)
+                file.close()
+            end
             
             
         elseif message.command == "execute" then
-            local result = {pcall(modules[data.func_name], table.unpack(message.args))}
-            rednet.send(sID, {type = "execute", result = result}, PROTOCOL)
+            print("Executing:", message.func_name)
+            local result = {pcall(modules[message.func_name], table.unpack(message.args or {}))}
+            local ok = table.remove(result, 1)
+            local data = table.remove(result, 1)
 
+            if ok then print("Success") else print(data) end
+            rednet.send(sID, {type = "execute", ok = ok, result = data}, PROTOCOL.."/"..message.func_name)
         end
     end
-
-        -- elseif data.type == "scan" then
-        --     if not modules.hasModule("plethora:scanner") then send("scan", false)
-        --     else send("scan", modules.scan()) end
-
-        -- elseif data.type == "sense" then
-        --     if not modules.hasModule("plethora:sensor") then send("sense", false)
-        --     else send("sense", modules.sense()) end
-
-        -- elseif data.type == "walk" then
-        --     if not modules.hasModule("plethora:kinetic") then send("walk", false)
-        --     else send("walk", modules.walk(data.x, data.y, data.z)) end
-
-        -- elseif data.type == "launch" then
-        --     if not modules.hasModule("plethora:kinetic") then send("launch", false)
-        --     else send("walk", modules.launch(data.yaw, data.pitch, data.force)) end
-
-        -- elseif data.type == "teleport" then
-        --     if not modules.hasModule("plethora:kinetic") then send("launch", false)
-        --     else send("walk", modules.launch(data.x, data.y, data.z)) end
-
-        -- elseif data.type == "use" then
-        --     if not modules.hasModule("plethora:kinetic") then send("launch", false)
-        --     else send("walk", modules.launch(data.x, data.y, data.z)) end
-        -- elseif  then
-        -- end
 end
 
 while true do
-    run()
+    local ok, err = pcall(run)
+    if err == "Terminated" then break end
+    if not ok then print(err) end
 end

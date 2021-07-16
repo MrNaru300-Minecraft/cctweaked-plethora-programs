@@ -19,7 +19,7 @@ else
     end
 end
 
-local function run(config, context)
+local function run(context)
     local meta = modules.getMetaByName(name)
 
     if context.keyManager:isPressed("ctrl+w") then
