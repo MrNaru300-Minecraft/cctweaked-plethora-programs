@@ -304,9 +304,9 @@ local function run(context)
 end
 
 local function finish(context)
-    canvas3d.remove()
 	blocks = {}
 	entities = {}
+	if canvas3d then canvas3d.remove() end
 end
 
 return {

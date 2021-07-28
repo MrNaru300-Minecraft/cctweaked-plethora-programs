@@ -69,7 +69,12 @@ local function loadPrograms()
     for n, program_name in pairs(fs.list(base_path.."/programs")) do
         print("Loading "..program_name.."...")
 
-        local ok, data = pcall(loadfile(base_path.."/programs/"..program_name))
+        local loaded_file, err = loadfile(base_path.."/programs/"..program_name)
+
+        assert(loaded_file, err)
+
+        local data = loaded_file()
+
 
         for _, dependency in pairs(data.dependencies) do
             if not modules.hasModule(dependency) and not peripheral.find(dependency) then
@@ -79,8 +84,10 @@ local function loadPrograms()
         end
 
         local text = canvas.addText({1,1+(n-1)*textHeight}, "", 0xffffffff, textSize)
+
+
         local meta = {file = program_name, loaded = ok, active = false, 
-        last_time_used = os.clock(), data = data, text = text }
+        last_time_used = os.clock(), data = data, text = text}
 
         programs[#programs+1] = meta
         
@@ -89,9 +96,7 @@ local function loadPrograms()
             text.setColor(0xff0000ff)
             updateProgramState(meta, false)
         elseif binds[data.name] then
-
             text.setText(data.name..": ["..binds[data.name].."]")
-
             program_listeners_ids[#program_listeners_ids+1] = keyManager.listen(
                 binds[data.name],
                 function (state)
