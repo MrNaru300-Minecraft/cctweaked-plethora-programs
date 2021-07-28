@@ -20,8 +20,7 @@ return {
 		"modem"
 	},
 	start = start,
-	run = scan,
+	run = run,
 	delay = 8,
-	finish = finish
-	
+	finish = function() end,	
 }
