@@ -23,7 +23,8 @@ local binds = {
     ["Ore Scanner"] = "ctrl+h",
     ["Wall Hack"]   = "ctrl+j",
     ["Kill Aura"]   = "ctrl+x",
-    ["Speed"]       = "ctrl+f"
+    ["Speed"]       = "ctrl+f",
+    ["Ore Cleanner"] = "ctrl+shift+h",
 }
 
 local programs = {}
