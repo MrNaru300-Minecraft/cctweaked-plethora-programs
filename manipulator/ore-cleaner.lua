@@ -32,8 +32,6 @@ print("Running server at "..PROTOCOL.."://".."cleaner/"..os.getComputerID())
 local function run()
     local sID, message = rednet.receive(PROTOCOL)
 
-    print("Request recived from "..sID)
-
     if message == "CLEAR" then
         local inv = modules.getInventory()
         for slot, item in pairs(inv.list()) do 

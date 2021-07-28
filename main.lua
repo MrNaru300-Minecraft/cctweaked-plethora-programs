@@ -75,7 +75,7 @@ local function loadPrograms()
         assert(loaded_file, err)
 
         local data = loaded_file()
-
+        local ok = true
 
         for _, dependency in pairs(data.dependencies) do
             if not modules.hasModule(dependency) and not peripheral.find(dependency) then
